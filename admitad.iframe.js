@@ -143,6 +143,7 @@
             function loadCallback() {
                 if (!loadCallback.loaded) {
                     loadCallback.loaded = true;
+                    self.addEvent('resize', self.sendSizeMessage());
                     self.sendSizeMessage();
                     if (self.scrollToFrame) {
                         self.sendScrollMessage();
@@ -150,7 +151,6 @@
                 }
             }
             loadCallback.loaded = false;
-            this.addEvent('resize', self.sendSizeMessage());
             // on load events
             if (document.readyState === "complete") {
                 loadCallback();
