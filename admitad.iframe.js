@@ -11,7 +11,11 @@
         scrollToFrame: false,
         sizeMessagePrefix: 'size=',
         frameVisibleSizeMessagePrefix: 'getFrameVisibleSize',
+        windowSizesMessagePrefix: 'getWindowSize',
+        scroolCallbackPrefix: 'setScroolCallback',
         scrollMessagePrefix: 'scroll=',
+        showLoaderPrefix: 'showLoader',
+        hideLoaderPrefix: 'hideLoader',
         isPostMessageSupported: function () {
             return !!window.postMessage && window.onmessage !== undefined;
         },
@@ -44,11 +48,25 @@
             return (elm.clip !== undefined && elm.clip.width) ||
                 elm.style.pixelWidth || elm.offsetWidth;
         },
+        strToObj: function (data) {
+            var parts = data.split(','), i, part, obj = {};
+            for (i = 0; i < parts.length; i += 1) {
+                part = parts[i].split("=");
+                obj[part[0]] = part[1];
+            }
+            return obj;
+        },
         setScrollToFrame: function (value) {
             this.scrollToFrame = value;
         },
         setFrameVisibleSizeCallback: function (func) {
             this.frameVisibleSizeCallback = func;
+        },
+        setWindowSizeCallback: function (func) {
+            this.windowSizeCallback = func;
+        },
+        setScrollCallback: function (func) {
+            this.scrollCallback = func;
         },
         getDocumentSize: function () {
             var body = document.body || document.getElementsByTagName('body')[0],
@@ -117,6 +135,46 @@
             // store callback
             this.setFrameVisibleSizeCallback(callback);
         },
+        requestWindowSize: function (callback) {
+            if (!this.isFrame()) { return; }
+            this.bindWindowSizeEvent();
+            this.sendMessage(this.windowSizesMessagePrefix);
+            // store callback
+            this.setWindowSizeCallback(callback);
+        },
+        requestScrollCallback: function (callback) {
+            if (!this.isFrame()) { return; }
+            this.bindScrollEvent();
+            this.sendMessage(this.scroolCallbackPrefix);
+            // store callback
+            this.setScrollCallback(callback);
+        },
+        requestShowLoader: function () {
+            if (!this.isFrame()) { return; }
+            this.sendMessage(this.showLoaderPrefix);
+        },
+        requestHideLoader: function () {
+            if (!this.isFrame()) { return; }
+            this.sendMessage(this.hideLoaderPrefix);
+        },
+        bindScrollEvent: function () {
+            if (!this.isSupportedFrame()) { return this; }
+            var self = this;
+            this.addEvent('message', function (e) {
+                e = e.originalEvent || e;
+                var data = e.data,
+                    size = data.match(/scroll=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
+                    obj;
+                if (size) {
+                    // parse data string
+                    obj = self.strToObj(size[1]);
+                    if (typeof self.windowSizeCallback === 'function') {
+                        self.windowSizeCallback(obj);
+                    }
+                }
+            });
+            return this;
+        },
         bindFrameVisibleSizeEvent: function () {
             if (!this.isSupportedFrame()) { return this; }
             // if postMessage is supporting then attach event
@@ -130,8 +188,27 @@
                 if (size) {
                     top = parseInt(size[1], 10);
                     bottom = parseInt(size[2], 10);
-                    if (typeof self.frameVisibleSizeCallback === 'function') {
-                        self.frameVisibleSizeCallback({top: top, bottom: bottom});
+                    if (typeof self.windowSizeCallback === 'function') {
+                        self.windowSizeCallback({top: top, bottom: bottom});
+                    }
+                }
+            });
+            return this;
+        },
+        bindWindowSizeEvent: function () {
+            if (!this.isSupportedFrame()) { return this; }
+            // if postMessage is supporting then attach event
+            var self = this;
+            this.addEvent('message', function (e) {
+                e = e.originalEvent || e;
+                var data = e.data,
+                    size = data.match(/size=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
+                    obj;
+                if (size) {
+                    // parse data string
+                    obj = self.strToObj(size[1]);
+                    if (typeof self.windowSizeCallback === 'function') {
+                        self.windowSizeCallback(obj);
                     }
                 }
             });

@@ -32,6 +32,42 @@ To center a element(on example pop-up) relative to the frame visible part.
 
     window.AdmitadFrameEvent.centerElementWithinFrame(elm);
 
+To get a parent window size.
+
+    window.AdmitadFrameEvent.requestWindowSize(function (data) {
+        console.log('documentHeight is ' + data.documentHeight);
+        console.log('documentWidth is ' + data.documentWidth);
+        console.log('frameHeight is ' + data.frameHeight);
+        console.log('frameWidth is ' + data.frameWidth);
+        console.log('frameLeft is ' + data.frameLeft);
+        console.log('frameTop is ' + data.frameTop);
+        console.log('windowHeight is ' + data.windowHeight);
+        console.log('windowScrollTop is '  + data.windowScrollTop);
+        console.log('windowWidth is ' + data.windowWidth);
+    });
+
+To bind the onscroll event of the parent window. It will send parent window size into callback.
+
+    window.AdmitadFrameEvent.requestScrollCallback(function (data) {
+        console.log('documentHeight is ' + data.documentHeight);
+        console.log('documentWidth is ' + data.documentWidth);
+        console.log('frameHeight is ' + data.frameHeight);
+        console.log('frameWidth is ' + data.frameWidth);
+        console.log('frameLeft is ' + data.frameLeft);
+        console.log('frameTop is ' + data.frameTop);
+        console.log('windowHeight is ' + data.windowHeight);
+        console.log('windowScrollTop is '  + data.windowScrollTop);
+        console.log('windowWidth is ' + data.windowWidth);
+    });
+
+To show a loader on the parent window
+
+    window.AdmitadFrameEvent.requestShowLoader();
+
+To hide a loader on the parent window
+
+    window.AdmitadFrameEvent.requestHideLoader();
+
 Notes
 ------
 
