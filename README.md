@@ -60,11 +60,11 @@ To bind the onscroll event of the parent window. It will send parent window size
         console.log('windowWidth is ' + data.windowWidth);
     });
 
-To show a loader on the parent window
+To show a loader on the parent window.
 
     window.AdmitadFrameEvent.requestShowLoader();
 
-To hide a loader on the parent window
+To hide a loader on the parent window.
 
     window.AdmitadFrameEvent.requestHideLoader();
 

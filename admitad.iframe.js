@@ -137,14 +137,12 @@
         },
         requestWindowSize: function (callback) {
             if (!this.isFrame()) { return; }
-            this.bindWindowSizeEvent();
             this.sendMessage(this.windowSizesMessagePrefix);
             // store callback
             this.setWindowSizeCallback(callback);
         },
         requestScrollCallback: function (callback) {
             if (!this.isFrame()) { return; }
-            this.bindScrollEvent();
             this.sendMessage(this.scroolCallbackPrefix);
             // store callback
             this.setScrollCallback(callback);
@@ -157,60 +155,53 @@
             if (!this.isFrame()) { return; }
             this.sendMessage(this.hideLoaderPrefix);
         },
-        bindScrollEvent: function () {
-            if (!this.isSupportedFrame()) { return this; }
-            var self = this;
-            this.addEvent('message', function (e) {
-                e = e.originalEvent || e;
-                var data = e.data,
-                    size = data.match(/scroll=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
-                    obj;
-                if (size) {
-                    // parse data string
-                    obj = self.strToObj(size[1]);
-                    if (typeof self.windowSizeCallback === 'function') {
-                        self.windowSizeCallback(obj);
-                    }
+        processScrollCallback: function (data) {
+            if (!data) { return; }
+            var size = data.match(/scroll=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
+                obj;
+            if (size) {
+                // parse data string
+                obj = this.strToObj(size[1]);
+                if (typeof this.scrollCallback === 'function') {
+                    this.scrollCallback(obj);
                 }
-            });
-            return this;
+            }
         },
-        bindFrameVisibleSizeEvent: function () {
-            if (!this.isSupportedFrame()) { return this; }
-            // if postMessage is supporting then attach event
-            var self = this;
-            this.addEvent('message', function (e) {
-                e = e.originalEvent || e;
-                var data = e.data,
-                    size = data.match(/size=(\d+),(\d+)$/),
-                    top,
-                    bottom;
-                if (size) {
-                    top = parseInt(size[1], 10);
-                    bottom = parseInt(size[2], 10);
-                    if (typeof self.windowSizeCallback === 'function') {
-                        self.windowSizeCallback({top: top, bottom: bottom});
-                    }
+        processFrameVisibleSizeCallback: function (data) {
+            if (!data) { return; }
+            var size = data.match(/size=(\d+),(\d+)$/),
+                top,
+                bottom;
+            if (size) {
+                top = parseInt(size[1], 10);
+                bottom = parseInt(size[2], 10);
+                if (typeof this.frameVisibleSizeCallback === 'function') {
+                    this.frameVisibleSizeCallback({top: top, bottom: bottom});
                 }
-            });
-            return this;
+            }
         },
-        bindWindowSizeEvent: function () {
+        processWindowSizeCallback: function (data) {
+            if (!data) { return; }
+            var size = data.match(/size=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
+                obj;
+            if (size) {
+                // parse data string
+                obj = this.strToObj(size[1]);
+                if (typeof this.windowSizeCallback === 'function') {
+                    this.windowSizeCallback(obj);
+                }
+            }
+
+        },
+        bindRequestEvents: function () {
             if (!this.isSupportedFrame()) { return this; }
-            // if postMessage is supporting then attach event
             var self = this;
             this.addEvent('message', function (e) {
                 e = e.originalEvent || e;
-                var data = e.data,
-                    size = data.match(/size=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
-                    obj;
-                if (size) {
-                    // parse data string
-                    obj = self.strToObj(size[1]);
-                    if (typeof self.windowSizeCallback === 'function') {
-                        self.windowSizeCallback(obj);
-                    }
-                }
+                var data = e.data;
+                self.processScrollCallback(data);
+                self.processFrameVisibleSizeCallback(data);
+                self.processWindowSizeCallback(data);
             });
             return this;
         },
@@ -236,6 +227,6 @@
             }
             return this;
         }
-    }).bindResizeEvents().bindFrameVisibleSizeEvent();
+    }).bindResizeEvents().bindRequestEvents();
 
 }(window, window.document));
