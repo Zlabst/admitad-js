@@ -20,6 +20,10 @@ To resize a parent window so that to fit the frame body.
 
     window.AdmitadFrameEvent.resizeParent();
 
+To send iframe path in parent window. The path will be set as path query parameter with History API.
+
+    window.AdmitadFrameEvent.setTrackPath(true);
+
 To get a visible frame size(height). The callback will be called
 with the frame visible part coordinates {top: top, bottom: bottom}.
 

@@ -1,15 +1,18 @@
 (function (window, document) {
 
-    "use strict";
+    'use strict';
 
     var Math = window.Math,
         HTMLElement = window.HTMLElement,
+        encodeURIComponent = window.encodeURIComponent,
         parseInt = window.parseInt;
 
     window.AdmitadFrameEvent = ({
         frameVisibleSizeCallback: null,
         scrollToFrame: false,
+        trackPath: false,
         sizeMessagePrefix: 'size=',
+        pathMessagePrefix: 'path=',
         frameVisibleSizeMessagePrefix: 'getFrameVisibleSize',
         windowSizesMessagePrefix: 'getWindowSize',
         scroolCallbackPrefix: 'setScroolCallback',
@@ -27,11 +30,14 @@
         },
         isElement: function (elm) {
             return !!elm && (
-                typeof HTMLElement === "object" ?
+                typeof HTMLElement === 'object' ?
                         elm instanceof HTMLElement : elm &&
-                        typeof elm === "object" && elm.nodeType === 1 &&
-                        typeof elm.nodeName === "string"
+                        typeof elm === 'object' && elm.nodeType === 1 &&
+                        typeof elm.nodeName === 'string'
             );
+        },
+        isSupportsHistoryApi: function () {
+          return !!(window.history && history.pushState);
         },
         getWindowSize: function () {
             var doc = document.documentElement,
@@ -51,28 +57,39 @@
         strToObj: function (data) {
             var parts = data.split(','), i, part, obj = {};
             for (i = 0; i < parts.length; i += 1) {
-                part = parts[i].split("=");
+                part = parts[i].split('=');
                 obj[part[0]] = part[1];
             }
             return obj;
         },
         setScrollToFrame: function (value) {
             this.scrollToFrame = value;
+            return this;
+        },
+        setTrackPath: function (value) {
+            this.trackPath = value;
+            return this;
         },
         setFrameVisibleSizeCallback: function (func) {
             this.frameVisibleSizeCallback = func;
+            return this;
         },
         setWindowSizeCallback: function (func) {
             this.windowSizeCallback = func;
+            return this;
         },
         setScrollCallback: function (func) {
             this.scrollCallback = func;
+            return this;
         },
         getDocumentSize: function () {
             var body = document.body || document.getElementsByTagName('body')[0],
                 width = Math.max(body.clientWidth || 0, body.offsetWidth || 0),
                 height = Math.max(body.clientHeight || 0, body.offsetHeight || 0);
             return height + ',' + width;
+        },
+        getDocumentPath: function () {
+            return window.location.pathname + window.location.search;
         },
         sendMessage: function (message) {
             if (this.isSupportedFrame()) {
@@ -82,6 +99,9 @@
         },
         sendSizeMessage: function () {
             this.sendMessage(this.sizeMessagePrefix + this.getDocumentSize());
+        },
+        sendPathMessage: function () {
+            this.sendMessage(this.pathMessagePrefix + encodeURIComponent(this.getDocumentPath()));
         },
         resizeParent: function () {
             this.sendSizeMessage();
@@ -95,9 +115,9 @@
                 var top, left;
                 left = (windowWidth - elmWidth) / 2;
                 top = data.top + (data.bottom - data.top - elmHeight) / 2;
-                elm.style.position = "absolute";
-                elm.style.top = top + "px";
-                elm.style.left = left + "px";
+                elm.style.position = 'absolute';
+                elm.style.top = top + 'px';
+                elm.style.left = left + 'px';
             });
         },
         sendScrollMessage: function () {
@@ -191,7 +211,6 @@
                     this.windowSizeCallback(obj);
                 }
             }
-
         },
         bindRequestEvents: function () {
             if (!this.isSupportedFrame()) { return this; }
@@ -213,6 +232,9 @@
                     loadCallback.loaded = true;
                     self.addEvent('resize', self.sendSizeMessage());
                     self.sendSizeMessage();
+                    if (self.isSupportsHistoryApi() && self.trackPath) {
+                        self.sendPathMessage();
+                    }
                     if (self.scrollToFrame) {
                         self.sendScrollMessage();
                     }
@@ -220,7 +242,7 @@
             }
             loadCallback.loaded = false;
             // on load events
-            if (document.readyState === "complete") {
+            if (document.readyState === 'complete') {
                 loadCallback();
             } else {
                 this.addEvent('load', loadCallback);
