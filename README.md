@@ -16,11 +16,11 @@ to the top of the frame on the onload event.
 
     window.AdmitadFrameEvent.setScrollToFrame(true);
 
-To resize a parent window so that to fit the frame body.
+To resize the parent window so that to fit the frame body.
 
     window.AdmitadFrameEvent.resizeParent();
 
-To send iframe path in parent window. The path will be set as *path* query parameter with History API.
+To send a iframe path in the parent window. The path will be set as *path* query parameter with History API.
 
     window.AdmitadFrameEvent.setTrackPath(true);
 
@@ -32,7 +32,7 @@ with the frame visible part coordinates {top: top, bottom: bottom}.
         console.log('bottom is ' + data.bottom);
     });
 
-To center a element(on example pop-up) relative to the frame visible part.
+To center an element(on example pop-up) relative to the frame visible part.
 
     window.AdmitadFrameEvent.centerElementWithinFrame(elm);
 
@@ -50,7 +50,7 @@ To get a parent window size.
         console.log('windowWidth is ' + data.windowWidth);
     });
 
-To bind the onscroll event of the parent window. It will send parent window size into callback.
+To bind the onscroll event of the parent window. It will send a parent window size into a callback.
 
     window.AdmitadFrameEvent.requestScrollCallback(function (data) {
         console.log('documentHeight is ' + data.documentHeight);
@@ -64,13 +64,33 @@ To bind the onscroll event of the parent window. It will send parent window size
         console.log('windowWidth is ' + data.windowWidth);
     });
 
-To show a loader on the parent window.
+To bind the onresize event of the parent window. It will send a parent window size into a callback.
+
+    window.AdmitadFrameEvent.requestResizeCallback(function (data) {
+        console.log('documentHeight is ' + data.documentHeight);
+        console.log('documentWidth is ' + data.documentWidth);
+        console.log('frameHeight is ' + data.frameHeight);
+        console.log('frameWidth is ' + data.frameWidth);
+        console.log('frameLeft is ' + data.frameLeft);
+        console.log('frameTop is ' + data.frameTop);
+        console.log('windowHeight is ' + data.windowHeight);
+        console.log('windowScrollTop is '  + data.windowScrollTop);
+        console.log('windowWidth is ' + data.windowWidth);
+    });
+
+
+To show the loader on the parent window.
 
     window.AdmitadFrameEvent.requestShowLoader();
 
-To hide a loader on the parent window.
+To hide the loader on the parent window.
 
     window.AdmitadFrameEvent.requestHideLoader();
+
+To scroll the parent window relative the frame top with some offset
+
+    window.AdmitadFrameEvent.requestScrollToFrameTopOffset(500)
+
 
 Notes
 ------

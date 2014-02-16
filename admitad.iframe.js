@@ -9,13 +9,17 @@
 
     window.AdmitadFrameEvent = ({
         frameVisibleSizeCallback: null,
+        resizeCallback: null,
+        scrollCallback: null,
+        windowSizeCallback: null,
         scrollToFrame: false,
         trackPath: false,
         sizeMessagePrefix: 'size=',
         pathMessagePrefix: 'path=',
         frameVisibleSizeMessagePrefix: 'getFrameVisibleSize',
         windowSizesMessagePrefix: 'getWindowSize',
-        scroolCallbackPrefix: 'setScroolCallback',
+        resizeCallbackPrefix: 'setResizeCallback',
+        scrollCallbackPrefix: 'setScrollCallback',
         scrollMessagePrefix: 'scroll=',
         showLoaderPrefix: 'showLoader',
         hideLoaderPrefix: 'hideLoader',
@@ -37,7 +41,7 @@
             );
         },
         isSupportsHistoryApi: function () {
-          return !!(window.history && history.pushState);
+            return !!(window.history && history.pushState);
         },
         getWindowSize: function () {
             var doc = document.documentElement,
@@ -74,12 +78,16 @@
             this.frameVisibleSizeCallback = func;
             return this;
         },
-        setWindowSizeCallback: function (func) {
-            this.windowSizeCallback = func;
+        setResizeCallback: function (func) {
+            this.resizeCallback = func;
             return this;
         },
         setScrollCallback: function (func) {
             this.scrollCallback = func;
+            return this;
+        },
+        setWindowSizeCallback: function (func) {
+            this.windowSizeCallback = func;
             return this;
         },
         getDocumentSize: function () {
@@ -155,17 +163,23 @@
             // store callback
             this.setFrameVisibleSizeCallback(callback);
         },
+        requestResizeCallback: function (callback) {
+            if (!this.isFrame()) { return; }
+            this.sendMessage(this.resizeCallbackPrefix);
+            // store callback
+            this.setResizeCallback(callback);
+        },
+        requestScrollCallback: function (callback) {
+            if (!this.isFrame()) { return; }
+            this.sendMessage(this.scrollCallbackPrefix);
+            // store callback
+            this.setScrollCallback(callback);
+        },
         requestWindowSize: function (callback) {
             if (!this.isFrame()) { return; }
             this.sendMessage(this.windowSizesMessagePrefix);
             // store callback
             this.setWindowSizeCallback(callback);
-        },
-        requestScrollCallback: function (callback) {
-            if (!this.isFrame()) { return; }
-            this.sendMessage(this.scroolCallbackPrefix);
-            // store callback
-            this.setScrollCallback(callback);
         },
         requestShowLoader: function () {
             if (!this.isFrame()) { return; }
@@ -175,9 +189,13 @@
             if (!this.isFrame()) { return; }
             this.sendMessage(this.hideLoaderPrefix);
         },
+        requestScrollToFrameTopOffset: function (value) {
+            // message to scroll parent window to frame top offset
+            this.sendMessage(this.scrollMessagePrefix + value);
+        },
         processScrollCallback: function (data) {
             if (!data) { return; }
-            var size = data.match(/scroll=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
+            var size = data.match(/scroll=((\w+=\d+(\.\d+)?,){8}\w+=\d+(\.\d+)?)$/),
                 obj;
             if (size) {
                 // parse data string
@@ -202,13 +220,17 @@
         },
         processWindowSizeCallback: function (data) {
             if (!data) { return; }
-            var size = data.match(/size=((\w+=\d+(.\d+)?,){8}\w+=\d+(.\d+)?)$/),
+            var size = data.match(/size=((\w+=\d+(\.\d+)?,){8}\w+=\d+(\.\d+)?)$/),
                 obj;
             if (size) {
                 // parse data string
                 obj = this.strToObj(size[1]);
                 if (typeof this.windowSizeCallback === 'function') {
                     this.windowSizeCallback(obj);
+                    this.windowSizeCallback = null;
+                }
+                if (typeof this.resizeCallback === 'function') {
+                    this.resizeCallback(obj);
                 }
             }
         },
