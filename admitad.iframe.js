@@ -62,7 +62,7 @@
             var parts = data.split(','), i, part, obj = {};
             for (i = 0; i < parts.length; i += 1) {
                 part = parts[i].split('=');
-                obj[part[0]] = part[1];
+                obj[part[0]] = +part[1];
             }
             return obj;
         },
